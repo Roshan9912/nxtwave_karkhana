@@ -1,0 +1,89 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from scipy.integrate import simps
+
+class MobiusStrip:
+    def __init__(self, R=1, w=0.2, n=200):
+        self.R = R
+        self.w = w
+        self.n = n
+        self.u = np.linspace(0, 2 * np.pi, n)
+        self.v = np.linspace(-w / 2, w / 2, n)
+        self.U, self.V = np.meshgrid(self.u, self.v)
+        self.X, self.Y, self.Z = self.compute_coordinates()
+
+    def compute_coordinates(self):
+        U = self.U
+        V = self.V
+        R = self.R
+        X = (R + V * np.cos(U / 2)) * np.cos(U)
+        Y = (R + V * np.cos(U / 2)) * np.sin(U)
+        Z = V * np.sin(U / 2)
+        return X, Y, Z
+
+    def surface_area(self):
+        # Compute partial derivatives
+        du = self.u[1] - self.u[0]
+        dv = self.v[1] - self.v[0]
+
+        Xu = np.gradient(self.X, du, axis=1)
+        Yu = np.gradient(self.Y, du, axis=1)
+        Zu = np.gradient(self.Z, du, axis=1)
+
+        Xv = np.gradient(self.X, dv, axis=0)
+        Yv = np.gradient(self.Y, dv, axis=0)
+        Zv = np.gradient(self.Z, dv, axis=0)
+
+        # Cross product of partials
+        Nx = Yu * Zv - Zu * Yv
+        Ny = Zu * Xv - Xu * Zv
+        Nz = Xu * Yv - Yu * Xv
+
+        # Magnitude of normal vector
+        dA = np.sqrt(Nx**2 + Ny**2 + Nz**2)
+        area = simps(simps(dA, self.v), self.u)
+        return area
+
+    def edge_length(self):
+        # Edge points at v = -w/2 and v = w/2
+        u = self.u
+        v = self.w / 2
+
+        x1 = (self.R + v * np.cos(u / 2)) * np.cos(u)
+        y1 = (self.R + v * np.cos(u / 2)) * np.sin(u)
+        z1 = v * np.sin(u / 2)
+
+        x2 = (self.R - v * np.cos(u / 2)) * np.cos(u)
+        y2 = (self.R - v * np.cos(u / 2)) * np.sin(u)
+        z2 = -v * np.sin(u / 2)
+
+        dx1 = np.gradient(x1)
+        dy1 = np.gradient(y1)
+        dz1 = np.gradient(z1)
+        len1 = simps(np.sqrt(dx1**2 + dy1**2 + dz1**2), u)
+
+        dx2 = np.gradient(x2)
+        dy2 = np.gradient(y2)
+        dz2 = np.gradient(z2)
+        len2 = simps(np.sqrt(dx2**2 + dy2**2 + dz2**2), u)
+
+        return len1 + len2
+
+    def plot(self):
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(self.X, self.Y, self.Z, rstride=4, cstride=4, color='cyan', edgecolor='k', alpha=0.8)
+        ax.set_title("Mobius Strip")
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel("Z")
+        return fig
+
+# Create and analyze a Mobius strip
+mobius = MobiusStrip(R=1, w=0.4, n=300)
+surface_area = mobius.surface_area()
+edge_length = mobius.edge_length()
+fig = mobius.plot()
+
+surface_area, edge_length, fig
