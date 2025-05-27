@@ -1,0 +1,20 @@
+1. Code Structure:
+MobiusStrip class with methods to:
+
+Generate the 3D mesh using the parametric equation.
+
+Approximate surface area via cross product of partial derivatives and numerical integration.
+
+Compute edge length by integrating distances along the two edges (v = ±w/2).
+
+Visualize using matplotlib.
+
+
+2. Surface Area Calculation:
+Used cross product of ∂r/∂u and ∂r/∂v to get local surface elements.
+
+Integrated over the u-v domain using the Simpson’s rule for accuracy.
+
+
+3. Edge Length Calculation:
+Calculated two paths along edges (top and bottom boundaries) and summed their lengths.
